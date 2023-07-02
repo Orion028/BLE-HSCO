@@ -68,7 +68,7 @@ In app.json also setup permission for bluetooth use for react-native-ble-plx
 
 ### Hook for using ble functions
 
-```javascript
+```typescript
 /* eslint-disable no-bitwise */
 import { useMemo, useState } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
@@ -269,7 +269,7 @@ export default useBLE;
 ```
 
 ### Below is the example to use it in the app
-```javascript
+```typescript
 import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
@@ -407,7 +407,7 @@ export default App;
 
 Created a modal to show list of BLE devices
 
-```javascript
+```typescript
 import React, { FC, useCallback } from "react";
 import {
   FlatList,
