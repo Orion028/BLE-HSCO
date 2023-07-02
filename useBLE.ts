@@ -11,8 +11,11 @@ import {
 
 import * as ExpoDevice from "expo-device";
 
+// Decode/encode base64 to string
 import base64 from "react-native-base64";
 
+//Constant variables: The WEIGHT_SCALE_UUID and WEIGHT_RATE_CHARACTERISTIC variables 
+//define the UUIDs of the weight scale service and characteristic used for communication with the BLE device.
 const WEIGHT_SCALE_UUID = "bc340e9b-ea14-1fb5-d64d-726000210324";
 const WEIGHT_RATE_CHARACTERISTIC = "bc340e9b-ea14-1fb5-d64d-726001210324";
 
@@ -29,9 +32,11 @@ interface BluetoothLowEnergyApi {
 }
 
 function useBLE(): BluetoothLowEnergyApi {
+  //The arrow function () => new BleManager() inside useMemo is responsible for creating a new instance of the BleManager class. 
+  // The BleManager class is imported from the react-native-ble-plx library and represents the main interface for managing BLE functionality in the React Native app.
   const bleManager = useMemo(() => new BleManager(), []);
-  const [allDevices, setAllDevices] = useState<Device[]>([]);
-  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
+  const [allDevices, setAllDevices] = useState<Device[]>([]); //Stores the list of devices
+  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null); 
   const [weight, setWeight] = useState<string>("0");
 
   const requestAndroid31Permissions = async () => {
@@ -90,9 +95,15 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+
+  // Check whether the device is duplicate or not
   const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex((device) => nextDevice.id === device.id) > -1;
 
+
+  // BLE device scanning: The scanForPeripherals function starts scanning for BLE devices using the startDeviceScan method of the BleManager instance. 
+  // It filters the discovered devices based on their names, specifically looking for devices with "Scale" in their names. 
+  // The discovered devices are stored in the allDevices state, avoiding duplicates.
   const scanForPeripherals = () =>
     bleManager.startDeviceScan(null, null, (error, device) => {
       if (error) {
@@ -108,11 +119,14 @@ function useBLE(): BluetoothLowEnergyApi {
       }
     });
 
+  // Device connection: The connectToDevice function establishes a connection to a specific BLE device using the connectToDevice method of the BleManager instance. 
+  // It also discovers the services and characteristics of the device using the discoverAllServicesAndCharacteristicsForDevice method.  
   const connectToDevice = async (device: Device) => {
     try {
       const deviceConnection = await bleManager.connectToDevice(device.id);
       setConnectedDevice(deviceConnection);
 
+      //getting ble devices all charateristics and services
       const deviceChars =
         await bleManager.discoverAllServicesAndCharacteristicsForDevice(
           device.id
@@ -127,6 +141,8 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  // Characteristic monitoring: The monitorNotification function sets up a notification to monitor a specific characteristic's value changes on the connected device. 
+  // It uses the monitorCharacteristicForService method of the connected device instance, decoding and updating the weight data when a new value is received.
   const monitorNotification = async () => {
     if (connectedDevice) {
       connectedDevice.monitorCharacteristicForService(
@@ -146,12 +162,15 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  // Notification cancellation: The cancelNotification function cancels the previously set notification using the cancelTransaction method of the BleManager instance.
   const cancelNotification = async () => {
-    if(connectedDevice) {
-      bleManager.cancelTransaction("weight234")
+    if (connectedDevice) {
+      bleManager.cancelTransaction("weight234");
     }
   };
 
+  // Device disconnection: The disconnectFromDevice function disconnects from the currently connected device using the cancelDeviceConnection method of the BleManager instance. 
+  // It also resets the connected device and weight data states.
   const disconnectFromDevice = () => {
     if (connectedDevice) {
       bleManager.cancelDeviceConnection(connectedDevice.id);
@@ -169,7 +188,7 @@ function useBLE(): BluetoothLowEnergyApi {
     disconnectFromDevice,
     weight,
     monitorNotification,
-    cancelNotification
+    cancelNotification,
   };
 }
 
